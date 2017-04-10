@@ -25,11 +25,11 @@ To train a model from scratch (ifcontinue==False indicates this is a new model, 
     
 To train a model from scratch (ifcontinue==True indicates continuing to train an existing model, data_type is the type of the tasks you want to train on and is between 1-20)
 
-   $ python QAtrain_weights.py --data_path=./tasks_1-20_v1-2/en/ --model=small --ifcontinue=False --data_type=1
+    $ python QAtrain_weights.py --data_path=./tasks_1-20_v1-2/en/ --model=small --ifcontinue=False --data_type=1
    
 To test an existing model (data_type is the type of the tasks and is between 1-20):
 
-   $ python QAanswer.py --data_path=./tasks_1-20_v1-2/en/ --model=small --data_type=1
+    $ python QAanswer.py --data_path=./tasks_1-20_v1-2/en/ --model=small --data_type=1
 
 
 Credit
