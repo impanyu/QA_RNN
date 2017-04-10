@@ -1,4 +1,4 @@
-# Teaching Machine to Answer Question Using Recurrent Neural Networks and Attentive Reader
+Teaching Machine to Answer Question Using Recurrent Neural Networks and Attentive Reader
 =======================================================================
 Tensorflow implementation of [Text Understanding with the Attention Sum Reader Network] https://arxiv.org/abs/1603.01547 with reference to
 [Teaching Machines to Read and Comprehend] https://arxiv.org/abs/1506.03340
