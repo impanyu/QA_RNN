@@ -374,8 +374,10 @@ class PTBModel(object):
 
     self._lr = tf.Variable(0.0, trainable=False)
 
-    self.train_step = tf.train.GradientDescentOptimizer(self._lr).minimize(loss)
-    '''
+    #self.train_step = tf.train.GradientDescentOptimizer(self._lr).minimize(loss)
+   
+
+
     tvars = tf.trainable_variables()
     grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars),
                                       config.max_grad_norm)
@@ -384,7 +386,9 @@ class PTBModel(object):
     self._train_op = optimizer.apply_gradients(
         zip(grads, tvars),
         global_step=tf.contrib.framework.get_or_create_global_step())
-    '''
+    
+    
+    
     self._new_lr = tf.placeholder(
         tf.float32, shape=[], name="new_learning_rate")
     self._lr_update = tf.assign(self._lr, self._new_lr)
@@ -424,7 +428,7 @@ class SmallConfig(object):
   max_grad_norm = 5
   num_layers = 2
   num_steps = 20
-  hidden_size =300
+  hidden_size =500
   max_epoch = 4
   max_max_epoch = 10
   keep_prob = 1
@@ -505,10 +509,12 @@ def run_epoch(session, model, eval_op=None, verbose=False,training=False):
       "initial_state":model._initial_state,
       "doc_weights":model.doc_weights
   }
+  '''
   if training:
     fetches["train"]=model.train_step
   if eval_op is not None:
     fetches["eval_op"] = eval_op
+  '''
 
   for step in range(model.input.epoch_size):
     #print("inside")
@@ -535,10 +541,11 @@ def run_epoch(session, model, eval_op=None, verbose=False,training=False):
     #print(vals["vanswer"])
     #print(vals["first_loss"])
     #print(vals["doc_weights"])
-    print("Accuracy in this round: %s"  % vals["correct_prediction"])
-    answer_word=QAreader._word_id_to_word(index)
-    print(answer_word)
-    print("actual word: %s" % QAreader._word_id_to_word (vals["actual"]))
+    if(verbose):
+        print("Accuracy in this round: %s"  % vals["correct_prediction"])
+        answer_word=QAreader._word_id_to_word(index)
+        print(answer_word)
+        print("actual word: %s" % QAreader._word_id_to_word (vals["actual"]))
     #print(vals["actual"])
     '''
     print(fetches["logits"].get_shape())
@@ -558,8 +565,10 @@ def run_epoch(session, model, eval_op=None, verbose=False,training=False):
             (step * 1.0 / model.input.epoch_size,cost, #cost,#np.exp(costs / iters),
              iters * model.input.batch_size / (time.time() - start_time)))
      # print("%s" % fetches["answer"])
+    #if(training =False):
+     #   break
 
-  return np.exp(costs / iters)
+  return costs/ model.input.epoch_size  #np.exp(costs / iters)
 
 
 def get_config():
@@ -614,20 +623,20 @@ def main(_):
         tf.summary.scalar("Training Loss", m.cost)
         tf.summary.scalar("Learning Rate", m.lr)
 
-        '''
+        
         with tf.name_scope("Valid"):
           valid_input = PTBInput(config=config, data=test_data,vocab=vocab, name="ValidInput")
           with tf.variable_scope("Model", reuse=True, initializer=initializer):
             mvalid = PTBModel(is_training=False, config=config, input_=valid_input)
           tf.summary.scalar("Validation Loss", mvalid.cost)
 
-
+        '''
         with tf.name_scope("Test"):
           test_input = PTBInput(config=eval_config, vocab=vocab,data=test_data, name="TestInput")
           with tf.variable_scope("Model", reuse=True, initializer=initializer):
             mtest = PTBModel(is_training=False, config=eval_config,
                              input_=test_input)
-        '''    
+        '''   
     print("model built")
 
     #saver = tf.train.Saver()          
@@ -659,8 +668,9 @@ def main(_):
         train_perplexity = run_epoch(session, m , verbose=True,training=True)   #, eval_op=m.train_op,
                                     
         print("Epoch: %d Train Perplexity: %.5f" % (i + 1, train_perplexity))
-        #valid_perplexity = run_epoch(session, mvalid)
-        #print("Epoch: %d Valid Perplexity: %.3f" % (i + 1, valid_perplexity))
+        
+        valid_perplexity = run_epoch(session, mvalid)
+        print("Epoch: %d Valid Perplexity: %.5f" % (i + 1, valid_perplexity))
         
       #test_perplexity = run_epoch(session, mtest)
       #print("Test Perplexity: %.3f" % test_perplexity)
