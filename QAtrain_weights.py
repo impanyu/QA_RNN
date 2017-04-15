@@ -190,10 +190,10 @@ class PTBModel(object):
     
     
     #with tf.device("/cpu:0"):
-    #embedding = tf.get_variable(
-     #    "embedding", [vocab_size, size], dtype=data_type())
-    embedding= tf.Variable(
-        tf.random_uniform([vocab_size, size], -1.0, 1.0),name="embedding",dtype=data_type())
+    embedding = tf.get_variable(
+         "embedding", [vocab_size, size], dtype=data_type())
+    #embedding= tf.Variable(
+     #   tf.random_uniform([vocab_size, size], -1.0, 1.0),name="embedding",dtype=data_type())
     self.embedding =embedding.name
     print(embedding.name)
     documents = tf.nn.embedding_lookup(embedding, input_.documents)
@@ -376,8 +376,8 @@ class PTBModel(object):
 
     #self.train_step = tf.train.GradientDescentOptimizer(self._lr).minimize(loss)
    
-
-
+    
+     
     tvars = tf.trainable_variables()
     grads, _ = tf.clip_by_global_norm(tf.gradients(cost, tvars),
                                       config.max_grad_norm)
@@ -424,13 +424,13 @@ class PTBModel(object):
 class SmallConfig(object):
   """Small config."""
   init_scale = 0.1
-  learning_rate = 0.1
+  learning_rate = 1
   max_grad_norm = 5
   num_layers = 2
   num_steps = 20
-  hidden_size =500
+  hidden_size =200
   max_epoch = 4
-  max_max_epoch = 10
+  max_max_epoch = 15
   keep_prob = 1
   lr_decay = 0.6
   batch_size = 20
@@ -509,12 +509,13 @@ def run_epoch(session, model, eval_op=None, verbose=False,training=False):
       "initial_state":model._initial_state,
       "doc_weights":model.doc_weights
   }
-  '''
+ 
   if training:
-    fetches["train"]=model.train_step
+    #fetches["train"]=model.train_step
+    fetches["train"]=model._train_op
   if eval_op is not None:
     fetches["eval_op"] = eval_op
-  '''
+  
 
   for step in range(model.input.epoch_size):
     #print("inside")
@@ -624,13 +625,13 @@ def main(_):
         tf.summary.scalar("Learning Rate", m.lr)
 
         
-        with tf.name_scope("Valid"):
-          valid_input = PTBInput(config=config, data=test_data,vocab=vocab, name="ValidInput")
-          with tf.variable_scope("Model", reuse=True, initializer=initializer):
+    with tf.name_scope("Valid"):
+        valid_input = PTBInput(config=config, data=test_data,vocab=vocab, name="ValidInput")
+        with tf.variable_scope("Model", reuse=True, initializer=initializer):
             mvalid = PTBModel(is_training=False, config=config, input_=valid_input)
-          tf.summary.scalar("Validation Loss", mvalid.cost)
+        tf.summary.scalar("Validation Loss", mvalid.cost)
 
-        '''
+        '''  
         with tf.name_scope("Test"):
           test_input = PTBInput(config=eval_config, vocab=vocab,data=test_data, name="TestInput")
           with tf.variable_scope("Model", reuse=True, initializer=initializer):
