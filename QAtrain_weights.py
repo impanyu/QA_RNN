@@ -428,7 +428,7 @@ class SmallConfig(object):
   max_grad_norm = 5
   num_layers = 2
   num_steps = 20
-  hidden_size =200
+  hidden_size =500
   max_epoch = 4
   max_max_epoch = 15
   keep_prob = 1
@@ -491,6 +491,7 @@ def run_epoch(session, model, eval_op=None, verbose=False,training=False):
   costs = 0.0
   iters = 0
   state = session.run(model.initial_state)
+  accuracy=0
 
   fetches = {
       "cost": model.cost,
@@ -534,7 +535,7 @@ def run_epoch(session, model, eval_op=None, verbose=False,training=False):
     #print(index)
     #print(vals["softmax_w"])
     
-    
+    accuracy=accuracy+vals["correct_prediction"]
     #print(vals["doc_avg"])
     
     #print(vals["logits"])
@@ -569,7 +570,7 @@ def run_epoch(session, model, eval_op=None, verbose=False,training=False):
     #if(training =False):
      #   break
 
-  return costs/ model.input.epoch_size  #np.exp(costs / iters)
+  return costs/ model.input.epoch_size, accuracy/model.input.epoch_size  #np.exp(costs / iters)
 
 
 def get_config():
@@ -666,12 +667,14 @@ def main(_):
             m.assign_lr(session, 0.0005)
        
         print("Epoch: %d Learning rate: %.5f" % (i + 1, session.run(m.lr)))
-        train_perplexity = run_epoch(session, m , verbose=True,training=True)   #, eval_op=m.train_op,
+        train_perplexity,accuracy = run_epoch(session, m , verbose=True,training=True)   #, eval_op=m.train_op,
                                     
-        print("Epoch: %d Train Perplexity: %.5f" % (i + 1, train_perplexity))
+        print("Epoch: %d Train Loss: %.5f" % (i + 1, train_perplexity))
+        print("Epoch: %d Train Accuracy: %.5f " % (i + 1, accuracy))
         
-        valid_perplexity = run_epoch(session, mvalid)
-        print("Epoch: %d Valid Perplexity: %.5f" % (i + 1, valid_perplexity))
+        valid_perplexity,accuracy = run_epoch(session, mvalid)
+        print("Epoch: %d Valid Loss: %.5f" % (i + 1, valid_perplexity))
+        print("Epoch: %d Valid Accuracy: %.5f " % (i + 1, accuracy))
         
       #test_perplexity = run_epoch(session, mtest)
       #print("Test Perplexity: %.3f" % test_perplexity)
